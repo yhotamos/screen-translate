@@ -26,9 +26,19 @@ public partial class OverlayWindow : Window
     /// ウィンドウが最大化された時のはみ出し（1ディスプレイ外の余分な領域）を取り除き、
     /// 現在表示されている正確なキャプチャ領域を返します。
     /// </summary>
+    /// <summary>
+    /// 画面キャプチャ用の物理座標とDPIを取得します。
+    /// ウィンドウが最大化された時のはみ出し（1ディスプレイ外の余分な領域）を取り除き、
+    /// 現在表示されている正確なキャプチャ領域を返します。
+    /// </summary>
     public (int pxX, int pxY, int pxWidth, int pxHeight, double dpiX, double dpiY) GetCaptureInfo()
     {
         // RootGrid は WindowChrome によって画面外のはみ出しがカットされた「実際の表示領域」
+        if (this.RootGrid.ActualWidth == 0 || this.RootGrid.ActualHeight == 0)
+        {
+            return (0, 0, 0, 0, 1.0, 1.0);
+        }
+
         Point topLeft = this.RootGrid.PointToScreen(new Point(0, 0));
         Point bottomRight = this.RootGrid.PointToScreen(new Point(this.RootGrid.ActualWidth, this.RootGrid.ActualHeight));
 
@@ -70,5 +80,21 @@ public partial class OverlayWindow : Window
         Canvas.SetLeft(rect, x);
         Canvas.SetTop(rect, y);
         this.OverlayCanvas.Children.Add(rect);
+    }
+
+    // ウインドウ上に下線を描画する
+    public void DrawUnderline(double x, double y, double width, double height)
+    {
+        var line = new System.Windows.Shapes.Line
+        {
+            Stroke = System.Windows.Media.Brushes.Yellow, // 好きな色に変更できます
+            StrokeThickness = 2,
+            X1 = x,
+            Y1 = y + height + 2, // 下端に合わせる
+            X2 = x + width,
+            Y2 = y + height + 2, // 下端に合わせる
+            IsHitTestVisible = false
+        };
+        this.OverlayCanvas.Children.Add(line);
     }
 }

@@ -45,21 +45,14 @@ namespace ScreenTranslate
 
         private async Task<SoftwareBitmap?> CaptureScreenAsync()
         {
-            // ① 前回の描画を先にクリア
+            // ① 前回の描画をクリア（下線は写ってもOCRに拾われにくいため、全体の非表示化とDelayを撤廃）
             overlay.ClearRectangles();
 
-            // オーバーレイ自身がスクショに写り込まないように一時的に透明にする
-            overlay.Opacity = 0;
-
-            // UIの非表示が画面に確実に反映されるのを待つ
-            await Task.Delay(100); // 10msだと消えきらないことがあるため100msに調整
-
-            // ② オーバーレイの表示領域（最大化時の隣の画面へのはみ出しを除外）とDPIを取得
+            // ② オーバーレイの表示領域（枠線の内側の純粋なキャプチャ領域）とDPIを取得
             var (pxX, pxY, pxWidth, pxHeight, dpiX, dpiY) = overlay.GetCaptureInfo();
 
             if (pxWidth <= 0 || pxHeight <= 0) 
             {
-                overlay.Opacity = 1;
                 return null;
             }
 
@@ -68,9 +61,6 @@ namespace ScreenTranslate
             {
                 g.CopyFromScreen(pxX, pxY, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
             }
-
-            // スクショを撮り終わったらすぐにオーバーレイを再表示
-            overlay.Opacity = 1;
 
             // ③ Bitmap → SoftwareBitmap に変換
             using var ms = new MemoryStream();
@@ -130,10 +120,11 @@ namespace ScreenTranslate
                 double drawW = w / dpiX;
                 double drawH = h / dpiY;
 
-                // オーバーレイに行の矩形を描画
-                overlay.DrawRectangle(drawX, drawY, drawW, drawH);
+                // オーバーレイに行の下線を描画（矩形を使いたい場合は DrawRectangle に戻す）
+                overlay.DrawUnderline(drawX, drawY, drawW, drawH);
+                // overlay.DrawRectangle(drawX, drawY, drawW, drawH);
 
-                return $"{line.Text} [x:{drawX:0}, y:{drawY:0}, w:{drawW:0}, h:{drawH:0}]";
+                return($"{line.Text} [x:{drawX:0}, y:{drawY:0}, w:{drawW:0}, h:{drawH:0}]");
             }).ToList(); 
         }
 

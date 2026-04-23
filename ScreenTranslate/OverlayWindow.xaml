@@ -41,7 +41,5 @@
 		<!-- OCR矩形描画用のCanvas (画面全体に合わせるため Row=0, RowSpan=2 に変更) -->
 		<Canvas x:Name="OverlayCanvas" Grid.Row="0" Grid.RowSpan="2" IsHitTestVisible="False" Background="Transparent"/>
 
-
-
 	</Grid>
 </Window>
